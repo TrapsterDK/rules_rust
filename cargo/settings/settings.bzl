@@ -35,6 +35,27 @@ def debug_std_streams_output_group():
         build_setting_default = False,
     )
 
+def cargo_toml_env_vars():
+    """A flag which controls whether `cargo_toml_env_vars` targets run the \
+    `cargo_toml_variable_extractor`.
+
+    When enabled (the default), each `cargo_toml_env_vars` target runs an
+    `ExtractCargoTomlEnvVars` action that reads the crate's `Cargo.toml` and
+    writes the `CARGO_PKG_*` values Cargo would set.
+
+    When disabled, these targets write an empty env file instead, so the
+    extractor and the crates it is built from are not built or fetched.
+    Rustc actions still get the values rules_rust derives from the target's
+    attributes (`CARGO_PKG_NAME`, `CARGO_PKG_VERSION*`), but not the ones that
+    only come from `Cargo.toml` (for example `CARGO_PKG_AUTHORS`,
+    `CARGO_PKG_REPOSITORY` or `CARGO_PKG_RUST_VERSION`).
+    """
+    bool_flag(
+        name = "cargo_toml_env_vars",
+        scope = "universal",
+        build_setting_default = True,
+    )
+
 def use_default_shell_env():
     """A flag which controls the global default of `ctx.actions.run.use_default_shell_env` for `cargo_build_script` targets.
     """

@@ -1,7 +1,15 @@
 """The `cargo_toml_env_vars` rule is used to retrieve the env vars that Cargo would set, based on the contents of a Cargo.toml file."""
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+
 def _cargo_toml_env_vars_impl(ctx):
     out = ctx.actions.declare_file(ctx.label.name + ".env")
+
+    if not ctx.attr._enabled[BuildSettingInfo].value:
+        ctx.actions.write(out, "")
+        return [
+            DefaultInfo(files = depset([out]), runfiles = ctx.runfiles([out])),
+        ]
 
     inputs = [ctx.file.src]
     args = ctx.actions.args()
@@ -40,8 +48,11 @@ cargo_toml_env_vars = rule(
         "_cargo_toml_variable_extractor": attr.label(
             allow_single_file = True,
             executable = True,
-            default = Label("//cargo/private/cargo_toml_variable_extractor"),
+            default = Label("//cargo/private:cargo_toml_variable_extractor"),
             cfg = "exec",
+        ),
+        "_enabled": attr.label(
+            default = Label("//cargo/settings:cargo_toml_env_vars"),
         ),
     },
     doc = "A rule for extracting environment variables which Cargo would set for a crate, making it easy to have Bazel set them too.",

@@ -16,6 +16,24 @@ rust_binary(
     visibility = ["//visibility:public"],
 )
 
+config_setting(
+    name = "cargo_toml_env_vars_disabled",
+    flag_values = {"//cargo/settings:cargo_toml_env_vars": "False"},
+)
+
+# `cargo_toml_env_vars` targets take the extractor through this alias so that,
+# with the flag off, the extractor and its third-party crates are not part of
+# the build graph at all. The select is resolved in the exec configuration,
+# which is why the flag is `scope = "universal"`.
+alias(
+    name = "cargo_toml_variable_extractor",
+    actual = select({
+        ":cargo_toml_env_vars_disabled": ":no_binary",
+        "//conditions:default": "//cargo/private/cargo_toml_variable_extractor",
+    }),
+    visibility = ["//visibility:public"],
+)
+
 copy_file(
     name = "no_ar",
     src = ":no_binary",
