@@ -6,6 +6,7 @@ load("//rust/platform:triple.bzl", "triple")
 # buildifier: disable=bzl-visibility
 load(
     "//rust/private:repository_utils.bzl",
+    "BUILD_for_rust_analyzer_toolchain",
     "lookup_tool_sha256",
     "produce_tool_path",
     "produce_tool_suburl",
@@ -185,10 +186,27 @@ def _select_rust_version_test_impl(ctx):
 
     return unittest.end(env)
 
+def _rust_analyzer_toolchain_build_file_test_impl(ctx):
+    env = unittest.begin(ctx)
+    build_file = BUILD_for_rust_analyzer_toolchain(
+        name = "rust_analyzer_toolchain",
+        rustc = "//:rustc",
+        proc_macro_srv = "//:rust_analyzer_proc_macro_srv",
+        rust_analyzer = "//:rust_analyzer",
+        version = "1.90.0",
+    )
+    asserts.true(
+        env,
+        'rustc_lib = "//:rustc_lib",' in build_file,
+        "Expected the toolchain to carry `rustc_lib`, got:\n{}".format(build_file),
+    )
+    return unittest.end(env)
+
 produce_tool_suburl_test = unittest.make(_produce_tool_suburl_test_impl)
 produce_tool_path_test = unittest.make(_produce_tool_path_test_impl)
 lookup_tool_sha256_test = unittest.make(_lookup_tool_sha256_test_impl)
 select_rust_version_test = unittest.make(_select_rust_version_test_impl)
+rust_analyzer_toolchain_build_file_test = unittest.make(_rust_analyzer_toolchain_build_file_test_impl)
 
 def repository_utils_test_suite(name):
     """Entry-point macro called from the BUILD file.
@@ -208,6 +226,9 @@ def repository_utils_test_suite(name):
     select_rust_version_test(
         name = "select_rust_version_test",
     )
+    rust_analyzer_toolchain_build_file_test(
+        name = "rust_analyzer_toolchain_build_file_test",
+    )
 
     native.test_suite(
         name = name,
@@ -216,5 +237,6 @@ def repository_utils_test_suite(name):
             "produce_tool_path_test",
             "lookup_tool_sha256_test",
             "select_rust_version_test",
+            "rust_analyzer_toolchain_build_file_test",
         ],
     )

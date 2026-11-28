@@ -815,6 +815,7 @@ rust_analyzer_toolchain(
     proc_macro_srv = {proc_macro_srv},
     rust_analyzer = {rust_analyzer},
     rustc = "{rustc}",
+    rustc_lib = "//:rustc_lib",
     rustc_srcs = "//lib/rustlib/src:rustc_srcs",
     version = "{version}",
     visibility = ["//visibility:public"],

@@ -353,6 +353,7 @@ def _rust_analyzer_toolchain_impl(ctx):
         proc_macro_srv = ctx.executable.proc_macro_srv,
         rust_analyzer = ctx.executable.rust_analyzer,
         rustc = ctx.executable.rustc,
+        rustc_lib = depset(ctx.files.rustc_lib),
         rustc_srcs = ctx.attr.rustc_srcs,
         rustc_srcs_path = ctx.attr.rustc_srcs_path,
         version = ctx.attr.version,
@@ -386,6 +387,11 @@ rust_analyzer_toolchain = rule(
             executable = True,
             allow_single_file = True,
             mandatory = True,
+        ),
+        "rustc_lib": attr.label(
+            doc = "The shared libraries `rust-analyzer` and the proc-macro server load at runtime.",
+            cfg = "exec",
+            allow_files = True,
         ),
         "rustc_srcs": attr.label(
             doc = "The source code of rustc.",
@@ -424,11 +430,13 @@ def _rust_analyzer_toolchain_alias_impl(ctx):
     if toolchain.rustc:
         files.append(toolchain.rustc)
 
+    # rust-analyzer and the proc-macro server load librustc_driver from $ORIGIN/../lib.
     return [
         toolchain,
         toolchain.make_variables,
         DefaultInfo(
             files = depset(files),
+            runfiles = ctx.runfiles(transitive_files = toolchain.rustc_lib),
         ),
     ]
 
