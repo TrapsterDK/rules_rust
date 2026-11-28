@@ -12,7 +12,10 @@ load("//rust:toolchain.bzl", "rust_stdlib_filegroup", "rust_toolchain")
 def _cc_config_impl(ctx):
     return cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
-        tool_paths = [tool_path(name = "gcc", path = ctx.attr.link_tool)] if ctx.attr.link_tool else [],
+        tool_paths = [
+            tool_path(name = name, path = ctx.attr.link_tool if name == "gcc" else "bin/" + name)
+            for name in ["ar", "cpp", "gcc", "ld", "nm", "objdump", "strip"]
+        ] if ctx.attr.link_tool else [],
         toolchain_identifier = "test-clang-cl",
         host_system_name = "unknown",
         target_system_name = "unknown",
