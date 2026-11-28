@@ -386,6 +386,10 @@ def _msvc_libpath(arg):
         return "-LIBPATH:" + arg[9:]
     return None
 
+def _is_clang_cl_for_msvc(toolchain, ld):
+    """Whether `ld` is clang-cl linking an MSVC target, which rejects the link.exe arguments rustc passes."""
+    return toolchain.target_abi == "msvc" and paths.basename(ld).lower().removesuffix(".exe") == "clang-cl"
+
 def get_linker_and_args(ctx, crate_type, toolchain, cc_toolchain, feature_configuration, rpaths, add_flags_for_binary = False):
     """Gathers cc_common linker information
 
@@ -455,7 +459,9 @@ def get_linker_and_args(ctx, crate_type, toolchain, cc_toolchain, feature_config
         )
         ld_is_direct_driver = False
 
-    if not ld or toolchain.linker_preference == "rust":
+    if not ld or toolchain.linker_preference == "rust" or (
+        toolchain.linker_preference == None and toolchain.linker and _is_clang_cl_for_msvc(toolchain, ld)
+    ):
         ld = toolchain.linker.path
         ld_is_direct_driver = toolchain.linker_type == "direct"
 

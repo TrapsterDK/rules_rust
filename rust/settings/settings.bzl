@@ -290,7 +290,8 @@ def toolchain_linker_preference():
     - "cc": Use the linker provided by the configured `cc_toolchain`. This uses rustc to invoke
       the C++ toolchain's linker (e.g., `clang`, `gcc`, `link.exe`).
     - "none": Default to `cc` being the preference and falling back to `rust` if no `cc_toolchain`
-      is available.
+      is available, or if it links an MSVC target with `clang-cl`, which cannot take rustc's
+      `link.exe` arguments.
     """
     string_flag(
         name = "toolchain_linker_preference",
