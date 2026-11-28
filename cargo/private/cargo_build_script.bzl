@@ -417,7 +417,8 @@ def _cargo_build_script_impl(ctx):
     link_search_paths = ctx.actions.declare_file(ctx.label.name + ".linksearchpaths")  # rustc-link-search, propagated from transitive dependencies
     cdylib_link_flags = ctx.actions.declare_file(ctx.label.name + ".cdyliblinkflags")  # rustc-cdylib-link-arg, applied to cdylib crates (incl. transitively)
     bin_link_flags = ctx.actions.declare_file(ctx.label.name + ".binlinkflags")  # rustc-link-arg-bins, applied to binary crates
-    compilation_mode_opt_level = get_compilation_mode_opts(ctx, toolchain).opt_level
+    compilation_mode_opts = get_compilation_mode_opts(ctx, toolchain)
+    compilation_mode_opt_level = compilation_mode_opts.opt_level
 
     script_data = []
     for target in ctx.attr.data:
@@ -481,7 +482,8 @@ def _cargo_build_script_impl(ctx):
 
     # This isn't exactly right, but Bazel doesn't have exact views of "debug" and "release", so...
     env.update({
-        "DEBUG": {"dbg": "true", "fastbuild": "true", "opt": "false"}.get(ctx.var["COMPILATION_MODE"], "true"),
+        # Like Cargo, derive DEBUG from the debuginfo level so cc-rs and rustc agree.
+        "DEBUG": "false" if compilation_mode_opts.debug_info in ("0", "none") else "true",
         "PROFILE": {"dbg": "debug", "fastbuild": "debug", "opt": "release"}.get(ctx.var["COMPILATION_MODE"], "unknown"),
     })
 

@@ -1,0 +1,3 @@
+load(":build_script_debug_test.bzl", "build_script_debug_test_suite")
+
+build_script_debug_test_suite(name = "build_script_debug_test_suite")
